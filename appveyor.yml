@@ -16,17 +16,12 @@ cache:
   - C:\Program Files\Pandoc\
   - C:\miktex
 
-branches:
-  only:
-    - appveyor
-
 # Download script file from GitHub
 init:
   ps: |
         $ErrorActionPreference = "Stop"
         Invoke-WebRequest http://raw.github.com/krlmlr/r-appveyor/master/scripts/appveyor-tool.ps1 -OutFile "..\appveyor-tool.ps1"
         Import-Module '..\appveyor-tool.ps1'
-
 install:
   - ps: Bootstrap
   - cmd: R -q -e "writeLines('options(repos = \'https://cloud.r-project.org\')', '~/.Rprofile')"
@@ -66,22 +61,6 @@ after_test: R -q -e "tic::after_success()"
 
 before_deploy: R -q -e "tic::before_deploy()"
 deploy_script: R -q -e "tic::deploy()"
-
-#deploy:
-#  provider: GitHub
-#  tag: $(appveyor_repo_tag_name)
-#  release: appveyor-v$(appveyor_build_version)
-#  description: 'Deployed $(appveyor_repo_tag_name)'
-#  auth_token:
-#    secure: rnXHOhvUNGlkqpMIlBhXq5bRY/I4wpi4Fqu6hf0bxPwLSFQHxnDWobG4rYUc6aG4
-#  artifact: /docs           
-#  draft: true
-#  force_update: true
-#  prerelease: false
-#  on:
-#    branch: appveyor
-#    appveyor_repo_tag: true
-
 after_deploy: R -q -e "tic::after_deploy()"
 
 on_finish: R -q -e "tic::after_script()"
@@ -89,6 +68,19 @@ on_finish: R -q -e "tic::after_script()"
 on_failure:
   - 7z a failure.zip *.Rcheck\*
   - appveyor PushArtifact failure.zip
+
+#deploy:
+#  release: appveyor-v$(appveyor_build_version)
+#  description: 'covrpage $(appveyor_repo_tag_name) has been released.'
+#  provider: GitHub
+#  auth_token:
+#    secure: rnXHOhvUNGlkqpMIlBhXq5bRY/I4wpi4Fqu6hf0bxPwLSFQHxnDWobG4rYUc6aG4 # your encrypted token from GitHub
+#  artifact: /docs           # upload all NuGet packages to release assets
+#  draft: false
+#  prerelease: false
+#  tag: $(APPVEYOR_REPO_TAG_NAME)
+#  on:
+#    branch: appveyor
 
 artifacts:
   - path: '*.Rcheck\**\*.log'
